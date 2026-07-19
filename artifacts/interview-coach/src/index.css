@@ -96,7 +96,7 @@
   --popover-foreground: 222 47% 11%;
   --popover-border: 214 32% 91%;
 
-  --primary: 222 47% 11%; /* Deep slate */
+  --primary: 199 89% 48%; /* Sharp calm teal accent */
   --primary-foreground: 0 0% 100%;
   
   --secondary: 210 40% 96%;
@@ -105,7 +105,7 @@
   --muted: 210 40% 96%;
   --muted-foreground: 215 16% 47%;
 
-  --accent: 199 89% 48%; /* Sharp calm teal accent */
+  --accent: 199 89% 35%; /* Deeper teal for accent */
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 84% 60%;
@@ -175,8 +175,8 @@
   --popover-foreground: 210 40% 98%;
   --popover-border: 215 28% 17%;
 
-  --primary: 210 40% 98%;
-  --primary-foreground: 222 47% 11%;
+  --primary: 199 89% 48%;
+  --primary-foreground: 0 0% 100%;
   
   --secondary: 215 28% 17%;
   --secondary-foreground: 210 40% 98%;
@@ -184,7 +184,7 @@
   --muted: 215 28% 17%;
   --muted-foreground: 215 20% 65%;
 
-  --accent: 199 89% 48%;
+  --accent: 199 89% 35%;
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 84% 60%;

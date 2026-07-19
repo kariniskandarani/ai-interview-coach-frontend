@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Briefcase, FileText, Loader2, Sparkles, ChevronRight, AlertCircle } from 'lucide-react';
+import { Upload, Briefcase, FileText, Loader2, Sparkles, Check, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -106,12 +106,20 @@ export default function Landing() {
       <main className="flex-1 flex flex-col">
         <div className="flex-1 max-w-5xl w-full mx-auto px-6 py-12 md:py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           
-          <div className="space-y-8">
+          <div className="space-y-8 relative z-10">
+            {/* Background radial glow */}
+            <div 
+              className="absolute -inset-20 z-[-1] pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle at center, hsl(199 89% 48% / 0.1) 0%, transparent 70%)'
+              }}
+            />
+            
             <div className="space-y-4">
               <div className="inline-flex items-center rounded-full border border-border px-3 py-1 text-sm font-medium bg-muted/50 text-muted-foreground">
                 Practice the interview before it counts
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
+              <h1 className="text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.1]">
                 Walk in already having done this once.
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed">
@@ -128,7 +136,7 @@ export default function Landing() {
               ].map((text, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <ChevronRight className="w-4 h-4 text-primary" />
+                    <Check className="w-4 h-4 text-primary" />
                   </div>
                   <span className="text-foreground/80 font-medium">{text}</span>
                 </li>
@@ -137,7 +145,7 @@ export default function Landing() {
           </div>
 
           <div className="relative">
-            <Card className="shadow-xl shadow-primary/5 border-border overflow-hidden">
+            <Card className="shadow-2xl shadow-primary/10 border-border overflow-hidden rounded-2xl">
               <CardContent className="p-0 flex flex-col relative">
                 
                 <AnimatePresence>
@@ -146,13 +154,38 @@ export default function Landing() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="absolute inset-0 z-10 bg-card/90 backdrop-blur-sm flex flex-col items-center justify-center p-8 text-center"
+                      className="absolute inset-0 z-10 bg-card/95 backdrop-blur-sm flex flex-col items-center justify-center p-8 text-center"
                     >
-                      <Loader2 className="w-12 h-12 text-primary animate-spin mb-6" />
+                      {/* Indeterminate thin progress bar at top */}
+                      <div className="absolute top-0 left-0 right-0 h-1 bg-muted overflow-hidden">
+                        <motion.div 
+                          className="h-full bg-primary"
+                          initial={{ x: '-100%' }}
+                          animate={{ x: '100%' }}
+                          transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                        />
+                      </div>
+                      
+                      <div className="flex gap-2 mb-6">
+                        <motion.div className="w-3 h-3 rounded-full bg-primary" animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 1, repeat: Infinity, delay: 0 }} />
+                        <motion.div className="w-3 h-3 rounded-full bg-primary" animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 1, repeat: Infinity, delay: 0.2 }} />
+                        <motion.div className="w-3 h-3 rounded-full bg-primary" animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 1, repeat: Infinity, delay: 0.4 }} />
+                      </div>
                       <h3 className="text-xl font-bold text-foreground mb-2">Preparing your interview</h3>
-                      <p className="text-muted-foreground min-h-[1.5rem] transition-opacity duration-300">
-                        {getLoadingMessage()}
-                      </p>
+                      <div className="min-h-[1.5rem] relative w-full flex justify-center">
+                        <AnimatePresence mode="wait">
+                          <motion.p
+                            key={loadingPhase}
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -5 }}
+                            transition={{ duration: 0.3 }}
+                            className="text-muted-foreground absolute"
+                          >
+                            {getLoadingMessage()}
+                          </motion.p>
+                        </AnimatePresence>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -218,7 +251,7 @@ export default function Landing() {
 
                   <Button 
                     size="lg" 
-                    className="w-full h-14 text-lg font-semibold shadow-md" 
+                    className="w-full h-14 text-lg font-semibold shadow-md transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98]" 
                     onClick={handleStart}
                     disabled={isUploading}
                   >

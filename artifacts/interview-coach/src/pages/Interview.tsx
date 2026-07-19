@@ -27,6 +27,28 @@ const FormattedText = ({ text }: { text: string }) => {
   );
 };
 
+// A helper to map category to color
+const getCategoryStyle = (category: string) => {
+  const normalized = category.toLowerCase();
+  if (normalized.includes('technical')) return 'bg-blue-50 text-blue-700 border-blue-200';
+  if (normalized.includes('behavioral')) return 'bg-amber-50 text-amber-700 border-amber-200';
+  if (normalized.includes('hr')) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  return 'bg-muted text-muted-foreground border-border';
+};
+
+// A helper to map score to color and style
+const getScoreStyle = (score: number) => {
+  if (score >= 8) return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+  if (score >= 5) return 'bg-amber-50 text-amber-700 border border-amber-200';
+  return 'bg-red-50 text-red-700 border border-red-200';
+};
+
+const getScoreInterpretation = (score: number) => {
+  if (score >= 8) return 'Strong performance';
+  if (score >= 5) return 'Solid foundation';
+  return 'Needs improvement';
+};
+
 export default function Interview() {
   const [, setLocation] = useLocation();
   const { sessionId, profile, interviewData, updateInterviewData, resetInterview } = useInterview();
@@ -106,8 +128,15 @@ export default function Interview() {
             <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="space-y-2 text-center md:text-left">
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Overall Performance</h3>
-                <div className="text-5xl font-bold text-foreground flex items-baseline gap-2 justify-center md:justify-start">
-                  {avgScore} <span className="text-2xl text-muted-foreground font-normal">/ 10</span>
+                
+                <div className="flex flex-col items-center md:items-start gap-1">
+                  <div className={`inline-flex items-baseline gap-2 px-6 py-2 rounded-xl ${getScoreStyle(avgScore)}`}>
+                    <span className="text-5xl font-black">{avgScore}</span>
+                    <span className="text-2xl font-normal opacity-70">/ 10</span>
+                  </div>
+                  <span className="text-sm font-medium text-muted-foreground mt-1 ml-1">
+                    {getScoreInterpretation(avgScore)}
+                  </span>
                 </div>
               </div>
               <div className="flex-1 w-full space-y-3">
@@ -129,10 +158,13 @@ export default function Interview() {
               <Card key={index} className="overflow-hidden border-border shadow-sm">
                 <div className="bg-muted/30 p-6 border-b border-border">
                   <div className="flex items-start justify-between gap-4 mb-4">
-                    <Badge variant="outline" className="bg-background">{entry.category}</Badge>
-                    <div className="font-bold text-lg flex items-center gap-1">
-                      Score: <span className={entry.evaluation.score >= 7 ? 'text-primary' : entry.evaluation.score >= 5 ? 'text-amber-600' : 'text-destructive'}>
-                        {entry.evaluation.score}/10
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getCategoryStyle(entry.category)}`}>
+                      {entry.category}
+                    </span>
+                    <div className="font-bold text-lg flex items-center gap-2">
+                      Score: 
+                      <span className={`px-2 py-0.5 rounded-md text-base ${getScoreStyle(entry.evaluation.score)}`}>
+                        {entry.evaluation.score}<span className="text-xs font-normal opacity-70">/10</span>
                       </span>
                     </div>
                   </div>
@@ -231,7 +263,9 @@ export default function Interview() {
                   AI
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Badge variant="secondary" className="mb-1 text-xs">{entry.category}</Badge>
+                  <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider mb-1 ${getCategoryStyle(entry.category)}`}>
+                    {entry.category}
+                  </span>
                   <div className="bg-muted/50 border border-border p-5 rounded-2xl rounded-tl-sm text-foreground text-[15px] leading-relaxed max-w-[85%]">
                     {entry.question_text}
                   </div>
@@ -246,15 +280,21 @@ export default function Interview() {
                   </div>
                   
                   {/* Inline Feedback Card */}
-                  <div className="w-full max-w-[85%] mt-4">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    className="w-full max-w-[85%] mt-4"
+                  >
                     <Card className="border-border bg-card shadow-sm text-left">
                       <CardContent className="p-4 md:p-5">
                         <div className="flex items-center justify-between mb-4">
                           <h5 className="text-sm font-bold flex items-center gap-2">
                             <Star className="w-4 h-4 text-amber-500" /> Instant Feedback
                           </h5>
-                          <div className="font-bold text-sm bg-muted px-2 py-1 rounded">
-                            Score: {entry.evaluation.score}/10
+                          <div className={`font-bold text-sm px-2.5 py-1 rounded-md flex items-baseline gap-1 ${getScoreStyle(entry.evaluation.score)}`}>
+                            Score: <span className="text-lg font-black">{entry.evaluation.score}</span>
+                            <span className="text-xs font-normal opacity-70">/10</span>
                           </div>
                         </div>
                         <div className="space-y-3">
@@ -275,7 +315,7 @@ export default function Interview() {
                         </div>
                       </CardContent>
                     </Card>
-                  </div>
+                  </motion.div>
                 </div>
               </div>
             </div>
@@ -286,13 +326,16 @@ export default function Interview() {
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="flex gap-4"
             >
               <div className="w-8 h-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center text-primary-foreground font-bold mt-1">
                 AI
               </div>
               <div className="flex-1 space-y-2">
-                <Badge variant="secondary" className="mb-1 text-xs">{interviewData.current_category}</Badge>
+                <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider mb-1 ${getCategoryStyle(interviewData.current_category)}`}>
+                  {interviewData.current_category}
+                </span>
                 <div className="bg-muted/50 border border-border p-5 rounded-2xl rounded-tl-sm text-foreground text-[15px] leading-relaxed max-w-[85%]">
                   {interviewData.current_question_text}
                 </div>
@@ -303,21 +346,22 @@ export default function Interview() {
           {/* Loading Indicator */}
           {isSubmitting && (
             <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="flex gap-4"
             >
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex-shrink-0 flex items-center justify-center text-primary mt-1">
-                <Loader2 className="w-4 h-4 animate-spin" />
+              <div className="w-8 h-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center text-primary-foreground font-bold mt-1 shadow-sm">
+                AI
               </div>
               <div className="flex-1">
-                <div className="bg-muted/30 border border-border p-4 rounded-2xl rounded-tl-sm text-muted-foreground text-sm flex items-center gap-3 w-fit">
-                  <span className="flex gap-1">
+                <div className="bg-muted/50 border border-border p-4 rounded-2xl rounded-tl-sm text-foreground text-[15px] flex items-center gap-3 w-fit shadow-sm">
+                  <span className="flex gap-1 text-primary text-lg">
                     <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.4, delay: 0 }}>•</motion.span>
                     <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.4, delay: 0.2 }}>•</motion.span>
                     <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.4, delay: 0.4 }}>•</motion.span>
                   </span>
-                  Analyzing your response...
+                  <span className="italic text-muted-foreground text-sm">Thinking...</span>
                 </div>
               </div>
             </motion.div>
@@ -357,7 +401,7 @@ export default function Interview() {
             />
             <Button 
               size="icon"
-              className="absolute bottom-3 right-3 rounded-full h-10 w-10 shadow-sm"
+              className="absolute bottom-3 right-3 rounded-full h-10 w-10 shadow-sm transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98]"
               onClick={handleSend}
               disabled={!answerText.trim() || isSubmitting}
             >

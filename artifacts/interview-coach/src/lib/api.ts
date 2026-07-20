@@ -47,19 +47,35 @@ export interface AnswerResponse {
   saved_session_id: string | null;
 }
 
-export async function uploadCvAndJobDescription(cv: File, jobDescription: string): Promise<UploadResponse> {
+export interface SessionSummary {
+  id: string;
+  created_at: string;
+  role_type: string;
+}
+
+// POST /api/upload — attach auth token if the user is logged in
+// Omit the header entirely for guests (do NOT send an empty Authorization header)
+export async function uploadCvAndJobDescription(
+  cv: File,
+  jobDescription: string,
+  authToken?: string,
+): Promise<UploadResponse> {
   const formData = new FormData();
   formData.append('cv', cv);
   formData.append('job_description', jobDescription);
 
+  const headers: Record<string, string> = {};
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
   const response = await fetch(`${API_BASE_URL}/api/upload`, {
     method: 'POST',
+    headers,
     body: formData,
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Failed to upload CV and Job Description. The server might be waking up (can take up to 60s).');
+    throw new Error(errorData.detail || 'Failed to upload CV and job description. The server might be waking up (can take up to 60 s).');
   }
 
   return response.json();
@@ -68,9 +84,7 @@ export async function uploadCvAndJobDescription(cv: File, jobDescription: string
 export async function submitAnswer(sessionId: string, answer: string): Promise<AnswerResponse> {
   const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/answer`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ answer }),
   });
 
@@ -84,7 +98,7 @@ export async function submitAnswer(sessionId: string, answer: string): Promise<A
 
 export async function getSession(sessionId: string): Promise<AnswerResponse> {
   const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}`);
-  
+
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.detail || 'Session expired, please start a new interview.');
@@ -93,14 +107,16 @@ export async function getSession(sessionId: string): Promise<AnswerResponse> {
   return response.json();
 }
 
-export interface SessionSummary {
-  id: string;
-  created_at: string;
-  role_type: string;
-}
+// GET /api/sessions — requires auth token; returns null if the caller has no token
+// so the caller can decide to show an empty/guest state instead of hitting a 401
+export async function listSessions(authToken: string): Promise<SessionSummary[]> {
+  const response = await fetch(`${API_BASE_URL}/api/sessions`, {
+    headers: { 'Authorization': `Bearer ${authToken}` },
+  });
 
-export async function listSessions(): Promise<SessionSummary[]> {
-  const response = await fetch(`${API_BASE_URL}/api/sessions`);
+  if (response.status === 401) {
+    throw Object.assign(new Error('Unauthorized'), { status: 401 });
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

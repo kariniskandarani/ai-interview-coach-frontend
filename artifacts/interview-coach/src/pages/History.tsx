@@ -1,120 +1,168 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowLeft, Clock, Briefcase, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Bot, ArrowLeft, Clock, Briefcase, AlertCircle, LogOut, ChevronRight } from 'lucide-react';
 import { listSessions, SessionSummary } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }) + ' at ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    + ' · ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 }
 
 export default function History() {
   const [, setLocation] = useLocation();
+  const { user, session, isGuest, signOut } = useAuth();
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    listSessions()
+    // Guests have no history — don't call the endpoint
+    if (isGuest || !session?.access_token) {
+      setIsLoading(false);
+      return;
+    }
+
+    listSessions(session.access_token)
       .then((data) => {
-        // Sort descending by created_at defensively (API already does this)
         const sorted = [...data].sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
         );
         setSessions(sorted);
       })
-      .catch((err) => setError(err.message || 'Failed to load past interviews.'))
+      .catch((err) => {
+        if (err.status === 401) {
+          // Token expired — send back to login
+          signOut().then(() => setLocation('/login'));
+        } else {
+          setError(err.message || 'Failed to load past interviews.');
+        }
+      })
       .finally(() => setIsLoading(false));
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans">
-      <header className="border-b border-border bg-card">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <span className="font-bold text-foreground text-lg tracking-tight">AI Interview Coach</span>
+      {/* Header */}
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
+        <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Bot className="w-4 h-4 text-primary" />
+            </div>
+            <span className="font-bold text-foreground tracking-tight">Interview Coach</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => setLocation('/')} className="gap-2 text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Start
-          </Button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setLocation('/')}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+            {user && (
+              <button
+                onClick={() => signOut().then(() => setLocation('/login'))}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                title="Sign out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 max-w-3xl w-full mx-auto px-6 py-12">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-10">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Past Interviews</h1>
-          <p className="text-muted-foreground mt-1">Your completed mock interview sessions.</p>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Session History</h1>
+          <p className="text-sm text-muted-foreground mt-1">Review past mock interviews and track your progress.</p>
         </div>
 
+        {/* Guest state */}
+        {(isGuest || !session) && !isLoading && (
+          <div className="flex flex-col items-center justify-center py-24 text-center gap-5">
+            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
+              <Briefcase className="w-7 h-7 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">Sign up to view your history</p>
+              <p className="text-muted-foreground text-sm mt-1">Guest sessions are not saved. Create an account to track progress.</p>
+            </div>
+            <button
+              onClick={() => setLocation('/login')}
+              className="mt-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors"
+            >
+              Create account
+            </button>
+          </div>
+        )}
+
+        {/* Loading skeletons */}
         {isLoading && (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-20 bg-muted/40 rounded-xl animate-pulse" />
+              <div key={i} className="h-[72px] bg-card border border-border rounded-xl animate-pulse" />
             ))}
           </div>
         )}
 
+        {/* Error */}
         {error && !isLoading && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Could not load history</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {!isLoading && !error && sessions.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-              <Briefcase className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="font-semibold text-foreground text-lg">No completed interviews yet</p>
-              <p className="text-muted-foreground mt-1 text-sm">Complete an interview and it will appear here.</p>
-            </div>
-            <Button onClick={() => setLocation('/')} className="mt-2">
-              Start your first interview
-            </Button>
+          <div className="flex gap-2 items-start bg-destructive/10 border border-destructive/20 text-destructive rounded-lg px-4 py-3 text-sm">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span>{error}</span>
           </div>
         )}
 
+        {/* Empty state */}
+        {!isLoading && !error && !isGuest && session && sessions.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
+              <Briefcase className="w-7 h-7 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">No completed interviews yet</p>
+              <p className="text-muted-foreground text-sm mt-1">Complete an interview and it will appear here.</p>
+            </div>
+            <button
+              onClick={() => setLocation('/')}
+              className="mt-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors"
+            >
+              Start your first interview
+            </button>
+          </div>
+        )}
+
+        {/* Session list */}
         {!isLoading && !error && sessions.length > 0 && (
-          <div className="space-y-3">
-            {sessions.map((session, i) => (
+          <div className="space-y-2">
+            {sessions.map((s, i) => (
               <motion.div
-                key={session.id}
-                initial={{ opacity: 0, y: 8 }}
+                key={s.id}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: i * 0.04 }}
+                className="group flex items-center justify-between gap-4 bg-card border border-border hover:border-primary/30 rounded-xl px-5 py-4 transition-colors cursor-default"
               >
-                <Card className="border-border hover:border-primary/30 transition-colors">
-                  <CardContent className="p-5 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Briefcase className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground">{session.role_type || 'Interview'}</p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                          <Clock className="w-3 h-3" />
-                          {formatDate(session.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-xs font-mono text-muted-foreground/50 hidden sm:block">
-                      #{session.id.slice(0, 8)}
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center flex-shrink-0">
+                    <Briefcase className="w-4.5 h-4.5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">{s.role_type || 'Interview'}</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <Clock className="w-3 h-3" /> {formatDate(s.created_at)}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                    Completed
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+                </div>
               </motion.div>
             ))}
           </div>

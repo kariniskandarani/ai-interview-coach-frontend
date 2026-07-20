@@ -88,8 +88,9 @@ spec for each feature pass:
 - ✅ Supabase Auth: login/signup + "Try without an account" guest mode (`replit_auth_prompt.md`)
 - ❓ UX polish pass (`replit_ux_polish_prompt.md`) — not verified
 - ❓ Sizing/refinement pass (`replit_sizing_refinement_prompt.md`) — not verified
-- ❌ Final AI-written readiness report (`replit_report_feature_prompt.md`) — no `/report` call
-  or report view found in the code as of this check
+- ✅ Final AI-written readiness report (`replit_report_feature_prompt.md`) — `getReport()` call
+  to `/api/sessions/{id}/report` and a full report view (score gauge, summary, strengths,
+  weaknesses, study plan) in `Interview.tsx`
 
 Re-verify this list against the code before relying on it — it reflects a point-in-time check,
 not a maintained status.

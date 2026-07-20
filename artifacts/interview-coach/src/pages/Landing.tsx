@@ -1,26 +1,57 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Briefcase, FileText, Loader2, Sparkles, Check, AlertCircle } from 'lucide-react';
+import { Upload, Briefcase, FileText, Loader2, Sparkles, Check, AlertCircle, History, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { uploadCvAndJobDescription } from '@/lib/api';
+import { uploadCvAndJobDescription, getSession } from '@/lib/api';
 import { useInterview } from '@/context/InterviewContext';
+
+const SESSION_ID_KEY = 'interview_session_id';
+const PROFILE_KEY = 'interview_profile';
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export default function Landing() {
   const [, setLocation] = useLocation();
-  const { setSessionData } = useInterview();
+  const { setSessionData, resumeSession } = useInterview();
   
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState('');
   
   const [isUploading, setIsUploading] = useState(false);
-  const [loadingPhase, setLoadingPhase] = useState<'uploading' | 'analyzing' | 'generating' | 'waking'>('waking');
+  const [loadingPhase, setLoadingPhase] = useState<'reading' | 'analyzing' | 'generating'>('reading');
+  const [isResuming, setIsResuming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // On mount: check localStorage for a saved session and try to resume
+  useEffect(() => {
+    const savedId = localStorage.getItem(SESSION_ID_KEY);
+    if (!savedId) return;
+
+    setIsResuming(true);
+    getSession(savedId)
+      .then((data) => {
+        const savedProfile = localStorage.getItem(PROFILE_KEY);
+        const profile = savedProfile ? JSON.parse(savedProfile) : null;
+        resumeSession(savedId, profile, data);
+        setLocation('/interview');
+      })
+      .catch(() => {
+        // Session expired (e.g. free-tier server restart) — clear and show form normally
+        localStorage.removeItem(SESSION_ID_KEY);
+        localStorage.removeItem(PROFILE_KEY);
+        setIsResuming(false);
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -61,23 +92,21 @@ export default function Landing() {
 
     setIsUploading(true);
     setError(null);
+    setLoadingPhase('reading');
 
-    // Simulate progress phases for better UX during cold start (max 60s)
-    const phases: Array<'uploading' | 'analyzing' | 'generating' | 'waking'> = ['waking', 'uploading', 'analyzing', 'generating'];
-    let phaseIndex = 0;
-    
-    const progressInterval = setInterval(() => {
-      phaseIndex = (phaseIndex + 1) % phases.length;
-      setLoadingPhase(phases[phaseIndex]);
-    }, 4000);
+    // Linear staged loading — reflects what's actually happening on the backend
+    const t1 = setTimeout(() => setLoadingPhase('analyzing'), 8000);
+    const t2 = setTimeout(() => setLoadingPhase('generating'), 22000);
 
     try {
       const data = await uploadCvAndJobDescription(cvFile, jobDescription);
-      clearInterval(progressInterval);
+      clearTimeout(t1);
+      clearTimeout(t2);
       setSessionData(data.session_id, data.profile, data.questions);
       setLocation('/interview');
     } catch (err: any) {
-      clearInterval(progressInterval);
+      clearTimeout(t1);
+      clearTimeout(t2);
       setError(err.message || 'An unexpected error occurred. Please try again.');
       setIsUploading(false);
     }
@@ -85,12 +114,27 @@ export default function Landing() {
 
   const getLoadingMessage = () => {
     switch (loadingPhase) {
-      case 'waking': return 'Connecting to AI systems (this might take a moment)...';
-      case 'uploading': return 'Reading your CV...';
-      case 'analyzing': return 'Cross-referencing with the job description...';
-      case 'generating': return 'Generating your personalized mock interview...';
+      case 'reading':    return 'Reading your CV...';
+      case 'analyzing':  return 'Analyzing your background against the role...';
+      case 'generating': return 'Generating your personalized interview questions...';
     }
   };
+
+  // Resuming overlay — shown briefly while we fetch the saved session
+  if (isResuming) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center font-sans">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="flex gap-2">
+            <motion.div className="w-3 h-3 rounded-full bg-primary" animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 1, repeat: Infinity, delay: 0 }} />
+            <motion.div className="w-3 h-3 rounded-full bg-primary" animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 1, repeat: Infinity, delay: 0.2 }} />
+            <motion.div className="w-3 h-3 rounded-full bg-primary" animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 1, repeat: Infinity, delay: 0.4 }} />
+          </div>
+          <p className="text-muted-foreground">Resuming your interview...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans">
@@ -100,6 +144,10 @@ export default function Landing() {
             <Sparkles className="w-5 h-5 text-primary" />
             <span className="font-bold text-foreground text-lg tracking-tight">AI Interview Coach</span>
           </div>
+          <Button variant="ghost" size="sm" onClick={() => setLocation('/history')} className="gap-2 text-muted-foreground hover:text-foreground">
+            <History className="w-4 h-4" />
+            History
+          </Button>
         </div>
       </header>
 
@@ -171,7 +219,7 @@ export default function Landing() {
                         <motion.div className="w-3 h-3 rounded-full bg-primary" animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 1, repeat: Infinity, delay: 0.2 }} />
                         <motion.div className="w-3 h-3 rounded-full bg-primary" animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 1, repeat: Infinity, delay: 0.4 }} />
                       </div>
-                      <h3 className="text-xl font-bold text-foreground mb-2">Preparing your interview</h3>
+                      <h3 className="text-xl font-bold text-foreground mb-3">Preparing your interview</h3>
                       <div className="min-h-[1.5rem] relative w-full flex justify-center">
                         <AnimatePresence mode="wait">
                           <motion.p
@@ -180,12 +228,13 @@ export default function Landing() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -5 }}
                             transition={{ duration: 0.3 }}
-                            className="text-muted-foreground absolute"
+                            className="text-muted-foreground absolute text-sm"
                           >
                             {getLoadingMessage()}
                           </motion.p>
                         </AnimatePresence>
                       </div>
+                      <p className="text-xs text-muted-foreground/60 mt-8">This usually takes 15–40 seconds</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -206,7 +255,7 @@ export default function Landing() {
                     </div>
                     
                     <div 
-                      className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+                      className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
                         cvFile ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 hover:bg-muted/30'
                       }`}
                       onDragOver={handleDragOver}
@@ -222,12 +271,15 @@ export default function Landing() {
                       />
                       {cvFile ? (
                         <div className="flex flex-col items-center gap-2">
-                          <FileText className="w-10 h-10 text-primary" />
-                          <span className="font-medium text-foreground">{cvFile.name}</span>
-                          <span className="text-xs text-muted-foreground cursor-pointer hover:text-primary">Click to change</span>
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <CheckCircle2 className="w-6 h-6 text-primary" />
+                          </div>
+                          <span className="font-semibold text-foreground">{cvFile.name}</span>
+                          <span className="text-xs text-muted-foreground">{formatFileSize(cvFile.size)} · PDF</span>
+                          <span className="text-xs text-primary/70 hover:text-primary transition-colors mt-1">Click to change file</span>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center gap-2 cursor-pointer">
+                        <div className="flex flex-col items-center gap-2">
                           <Upload className="w-10 h-10 text-muted-foreground" />
                           <span className="font-medium text-foreground">Drop your CV here or click to browse</span>
                           <span className="text-xs text-muted-foreground">PDF only</span>
@@ -242,7 +294,7 @@ export default function Landing() {
                       Step 2: The Job Description
                     </div>
                     <Textarea 
-                      placeholder="Paste the full job posting here..." 
+                      placeholder="Paste the full job posting here — including requirements, responsibilities, and any skills listed. The more complete the posting, the more accurate your questions will be." 
                       className="min-h-[160px] resize-none text-base p-4"
                       value={jobDescription}
                       onChange={(e) => setJobDescription(e.target.value)}

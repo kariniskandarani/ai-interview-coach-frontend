@@ -5,6 +5,7 @@ import NotFound from '@/pages/not-found';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
 import Landing from '@/pages/Landing';
 import Interview from '@/pages/Interview';
+import History from '@/pages/History';
 import { InterviewProvider } from '@/context/InterviewContext';
 
 const queryClient = new QueryClient();
@@ -14,6 +15,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Landing} />
       <Route path="/interview" component={Interview} />
+      <Route path="/history" component={History} />
       <Route component={NotFound} />
     </Switch>
   );

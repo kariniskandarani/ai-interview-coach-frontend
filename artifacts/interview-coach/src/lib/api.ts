@@ -92,3 +92,20 @@ export async function getSession(sessionId: string): Promise<AnswerResponse> {
 
   return response.json();
 }
+
+export interface SessionSummary {
+  id: string;
+  created_at: string;
+  role_type: string;
+}
+
+export async function listSessions(): Promise<SessionSummary[]> {
+  const response = await fetch(`${API_BASE_URL}/api/sessions`);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to load past interviews.');
+  }
+
+  return response.json();
+}

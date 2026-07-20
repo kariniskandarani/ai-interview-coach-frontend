@@ -1,5 +1,8 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Profile, Question, AnswerResponse } from '../lib/api';
+
+const SESSION_ID_KEY = 'interview_session_id';
+const PROFILE_KEY = 'interview_profile';
 
 interface InterviewState {
   sessionId: string | null;
@@ -7,6 +10,7 @@ interface InterviewState {
   questions: Question[];
   interviewData: AnswerResponse | null;
   setSessionData: (sessionId: string, profile: Profile, questions: Question[]) => void;
+  resumeSession: (sessionId: string, profile: Profile | null, data: AnswerResponse) => void;
   updateInterviewData: (data: AnswerResponse) => void;
   resetInterview: () => void;
 }
@@ -23,7 +27,11 @@ export function InterviewProvider({ children }: { children: ReactNode }) {
     setSessionId(id);
     setProfile(prof);
     setQuestions(qs);
-    // Initialize interview data with the first question if we don't have it yet
+
+    // Persist to localStorage so the interview survives a refresh
+    localStorage.setItem(SESSION_ID_KEY, id);
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(prof));
+
     if (!interviewData && qs.length > 0) {
       setInterviewData({
         session_id: id,
@@ -38,8 +46,20 @@ export function InterviewProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Called when resuming from localStorage on app load
+  const resumeSession = (id: string, prof: Profile | null, data: AnswerResponse) => {
+    setSessionId(id);
+    setProfile(prof);
+    setInterviewData(data);
+  };
+
   const updateInterviewData = (data: AnswerResponse) => {
     setInterviewData(data);
+    // Clear localStorage once finished — a completed interview shouldn't be resumed
+    if (data.finished) {
+      localStorage.removeItem(SESSION_ID_KEY);
+      localStorage.removeItem(PROFILE_KEY);
+    }
   };
 
   const resetInterview = () => {
@@ -47,10 +67,9 @@ export function InterviewProvider({ children }: { children: ReactNode }) {
     setProfile(null);
     setQuestions([]);
     setInterviewData(null);
+    localStorage.removeItem(SESSION_ID_KEY);
+    localStorage.removeItem(PROFILE_KEY);
   };
-
-  // Optional: load from sessionStorage so refresh doesn't completely lose everything if they haven't started answering yet,
-  // but requirements say "React state (useState/useReducer) - no localStorage needed", so we stick to just memory.
 
   return (
     <InterviewContext.Provider value={{
@@ -59,6 +78,7 @@ export function InterviewProvider({ children }: { children: ReactNode }) {
       questions,
       interviewData,
       setSessionData,
+      resumeSession,
       updateInterviewData,
       resetInterview
     }}>

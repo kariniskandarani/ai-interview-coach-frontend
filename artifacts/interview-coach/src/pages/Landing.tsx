@@ -294,7 +294,7 @@ export default function Landing() {
                       Step 2: The Job Description
                     </div>
                     <Textarea 
-                      placeholder="Paste the full job posting here — including requirements, responsibilities, and any skills listed. The more complete the posting, the more accurate your questions will be." 
+                      placeholder="Paste the job description here..." 
                       className="min-h-[160px] resize-none text-base p-4"
                       value={jobDescription}
                       onChange={(e) => setJobDescription(e.target.value)}

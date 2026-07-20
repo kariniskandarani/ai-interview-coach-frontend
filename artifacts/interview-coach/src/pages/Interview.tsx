@@ -3,7 +3,6 @@ import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Loader2, Star, CheckCircle2, RotateCcw, MessageSquare, AlertCircle, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { submitAnswer } from '@/lib/api';
@@ -112,6 +111,15 @@ export default function Interview() {
   const [error, setError] = useState<string | null>(null);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-grow textarea
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }, [answerText]);
 
   // Redirect if no session
   useEffect(() => {
@@ -309,26 +317,28 @@ export default function Interview() {
       
       {/* Header */}
       <header className="border-b border-border bg-card flex-shrink-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold shadow-sm flex-shrink-0">
               AI
             </div>
-            <div>
-              <div className="font-bold text-sm text-foreground">Interview Coach</div>
-              <div className="text-xs text-muted-foreground">Target Role: {profile?.role_type}</div>
+            <div className="leading-tight">
+              <div className="font-semibold text-sm text-foreground leading-none">{profile?.role_type ?? 'Interview Coach'}</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">
+                Question {Math.min(interviewData.current_question_number, interviewData.total_questions)} of {interviewData.total_questions}
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-sm font-medium text-muted-foreground">
-              Question {Math.min(interviewData.current_question_number, interviewData.total_questions)} of {interviewData.total_questions}
-            </div>
-            <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-primary transition-all duration-500 ease-out" 
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="w-28 h-1.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-500 ease-out"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
+            <span className="text-[11px] font-medium text-muted-foreground tabular-nums w-8 text-right">
+              {Math.round(progressPercent)}%
+            </span>
           </div>
         </div>
       </header>
@@ -482,12 +492,15 @@ export default function Interview() {
       {!interviewData.finished && (
         <div className="bg-card border-t border-border p-4 flex-shrink-0 relative z-20 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
           <div className="max-w-4xl mx-auto relative">
-            <Textarea
+            <textarea
+              ref={textareaRef}
               value={answerText}
               onChange={(e) => setAnswerText(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Type your answer here... (Press Enter to send, Shift+Enter for new line)"
-              className="min-h-[80px] max-h-[200px] pr-14 text-base resize-none shadow-sm focus-visible:ring-primary/20 bg-background"
+              placeholder="Type your answer... (Enter to send, Shift+Enter for new line)"
+              rows={1}
+              style={{ minHeight: '44px', maxHeight: '120px' }}
+              className="w-full pr-14 py-2.5 px-3 text-sm resize-none overflow-y-auto rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 disabled:opacity-50 transition-shadow shadow-sm"
               disabled={isSubmitting}
             />
             <Button 

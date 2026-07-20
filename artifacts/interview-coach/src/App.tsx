@@ -7,20 +7,20 @@ import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import Landing from '@/pages/Landing';
 import Interview from '@/pages/Interview';
 import History from '@/pages/History';
-import Login from '@/pages/Login';
 import { InterviewProvider } from '@/context/InterviewContext';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 
 const queryClient = new QueryClient();
 
-// Guard: redirect to /login unless the user is authenticated or in guest mode
+// Guard: redirect to the landing page (which handles login/guest entry) unless
+// the user is authenticated or in guest mode
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isGuest, loading } = useAuth();
   const [, setLocation] = useLocation();
 
   useEffect(() => {
     if (!loading && !user && !isGuest) {
-      setLocation('/login');
+      setLocation('/');
     }
   }, [loading, user, isGuest, setLocation]);
 
@@ -47,12 +47,8 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 function Router() {
   return (
     <Switch>
-      <Route path="/login" component={Login} />
-      <Route path="/">
-        <AuthGuard>
-          <Landing />
-        </AuthGuard>
-      </Route>
+      {/* Landing handles both the logged-out (login/guest) and logged-in views itself */}
+      <Route path="/" component={Landing} />
       <Route path="/interview">
         <AuthGuard>
           <Interview />

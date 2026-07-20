@@ -53,6 +53,14 @@ export interface SessionSummary {
   role_type: string;
 }
 
+export interface ReportResponse {
+  readiness_score: number;
+  overall_summary: string;
+  strengths: string[];
+  weaknesses: string[];
+  study_plan: string[];
+}
+
 // POST /api/upload — attach auth token if the user is logged in
 // Omit the header entirely for guests (do NOT send an empty Authorization header)
 export async function uploadCvAndJobDescription(
@@ -121,6 +129,19 @@ export async function listSessions(authToken: string): Promise<SessionSummary[]>
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.detail || 'Failed to load past interviews.');
+  }
+
+  return response.json();
+}
+
+// GET /api/sessions/{id}/report — only call once the interview is finished;
+// this triggers a real AI call on the backend and takes a few seconds
+export async function getReport(sessionId: string): Promise<ReportResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/report`);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to generate your report. Please try again.');
   }
 
   return response.json();

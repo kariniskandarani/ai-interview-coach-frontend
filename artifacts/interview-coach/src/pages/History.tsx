@@ -34,8 +34,8 @@ export default function History() {
       })
       .catch((err) => {
         if (err.status === 401) {
-          // Token expired — send back to login
-          signOut().then(() => setLocation('/login'));
+          // Token expired — send back to the landing page's login form
+          signOut().then(() => setLocation('/'));
         } else {
           setError(err.message || 'Failed to load past interviews.');
         }
@@ -57,14 +57,14 @@ export default function History() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setLocation('/')}
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground cursor-pointer px-3 py-1.5 rounded-full hover:bg-muted transition-colors"
             >
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
             {user && (
               <button
-                onClick={() => signOut().then(() => setLocation('/login'))}
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => signOut().then(() => setLocation('/'))}
+                className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
                 title="Sign out"
               >
                 <LogOut className="w-4 h-4" />
@@ -91,7 +91,7 @@ export default function History() {
               <p className="text-muted-foreground text-sm mt-1">Guest sessions are not saved. Create an account to track progress.</p>
             </div>
             <button
-              onClick={() => setLocation('/login')}
+              onClick={() => signOut().then(() => setLocation('/'))}
               className="mt-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors"
             >
               Create account

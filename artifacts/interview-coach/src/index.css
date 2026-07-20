@@ -66,73 +66,73 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* LIGHT MODE */
+/* DIRECTION B — Dark Pro (slate-950 / cyan-400) */
 :root {
-  --button-outline: rgba(0, 0, 0, 0.1);
-  --badge-outline: rgba(0, 0, 0, 0.05);
-  --opaque-button-border-intensity: -8;
-  --elevate-1: rgba(0, 0, 0, 0.03);
-  --elevate-2: rgba(0, 0, 0, 0.08);
+  --button-outline: rgba(255, 255, 255, 0.1);
+  --badge-outline: rgba(255, 255, 255, 0.05);
+  --opaque-button-border-intensity: 9;
+  --elevate-1: rgba(255, 255, 255, 0.03);
+  --elevate-2: rgba(255, 255, 255, 0.07);
 
-  /* Deep Slate & Off-White Premium SaaS Theme */
-  --background: 210 20% 98%; /* Soft off-white */
-  --foreground: 222 47% 11%; /* Deep slate text */
-  --border: 214 32% 91%;
-  
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --card-border: 214 32% 91%;
+  /* slate-950 background, cyan-400 accent */
+  --background: 222 47% 3%;   /* #020617 slate-950 */
+  --foreground: 210 40% 96%;  /* slate-100 near-white */
+  --border: 217 33% 17%;      /* slate-800 */
 
-  --sidebar: 210 20% 98%;
-  --sidebar-foreground: 222 47% 11%;
-  --sidebar-border: 214 32% 91%;
-  --sidebar-primary: 222 47% 11%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 210 40% 96%;
-  --sidebar-accent-foreground: 222 47% 11%;
-  --sidebar-ring: 222 47% 11%;
+  --card: 222 47% 6%;         /* slate-900 */
+  --card-foreground: 210 40% 96%;
+  --card-border: 217 33% 17%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --popover-border: 214 32% 91%;
+  --sidebar: 222 47% 6%;
+  --sidebar-foreground: 210 40% 96%;
+  --sidebar-border: 217 33% 17%;
+  --sidebar-primary: 187 97% 50%;   /* cyan-400 */
+  --sidebar-primary-foreground: 222 47% 4%;
+  --sidebar-accent: 217 33% 17%;
+  --sidebar-accent-foreground: 210 40% 96%;
+  --sidebar-ring: 187 97% 50%;
 
-  --primary: 199 89% 48%; /* Sharp calm teal accent */
-  --primary-foreground: 0 0% 100%;
-  
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222 47% 11%;
+  --popover: 222 47% 6%;
+  --popover-foreground: 210 40% 96%;
+  --popover-border: 217 33% 17%;
 
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
+  --primary: 187 97% 50%;     /* cyan-400 #22d3ee */
+  --primary-foreground: 222 47% 4%;  /* slate-950 text on cyan */
 
-  --accent: 199 89% 35%; /* Deeper teal for accent */
-  --accent-foreground: 0 0% 100%;
+  --secondary: 217 33% 17%;   /* slate-800 */
+  --secondary-foreground: 210 40% 96%;
+
+  --muted: 217 33% 13%;       /* slate-850 */
+  --muted-foreground: 215 20% 55%; /* slate-400 */
+
+  --accent: 187 97% 42%;      /* cyan-500 */
+  --accent-foreground: 222 47% 4%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --input: 214 32% 91%;
-  --ring: 222 47% 11%;
-  
-  --chart-1: 199 89% 48%;
-  --chart-2: 215 16% 47%;
-  --chart-3: 222 47% 11%;
+  --input: 217 33% 17%;       /* slate-800 */
+  --ring: 187 97% 50%;
+
+  --chart-1: 187 97% 50%;
+  --chart-2: 215 20% 55%;
+  --chart-3: 210 40% 96%;
   --chart-4: 38 92% 50%;
   --chart-5: 0 84% 60%;
 
   --app-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --radius: 0.5rem; /* 8px */
+  --radius: 0.5rem;
 
-  --shadow-2xs: 0px 1px 2px 0px rgba(0,0,0,0.05);
-  --shadow-xs: 0px 1px 3px 0px rgba(0,0,0,0.1), 0px 1px 2px -1px rgba(0,0,0,0.1);
-  --shadow-sm: 0px 2px 4px -1px rgba(0,0,0,0.1), 0px 2px 2px -2px rgba(0,0,0,0.1);
-  --shadow: 0px 4px 6px -1px rgba(0,0,0,0.1), 0px 2px 4px -2px rgba(0,0,0,0.1);
-  --shadow-md: 0px 10px 15px -3px rgba(0,0,0,0.1), 0px 4px 6px -4px rgba(0,0,0,0.1);
-  --shadow-lg: 0px 20px 25px -5px rgba(0,0,0,0.1), 0px 8px 10px -6px rgba(0,0,0,0.1);
-  --shadow-xl: 0px 25px 50px -12px rgba(0,0,0,0.25);
-  --shadow-2xl: 0px 35px 60px -15px rgba(0,0,0,0.3);
+  --shadow-2xs: 0px 1px 2px 0px rgba(0,0,0,0.5);
+  --shadow-xs: 0px 1px 3px 0px rgba(0,0,0,0.5), 0px 1px 2px -1px rgba(0,0,0,0.5);
+  --shadow-sm: 0px 2px 4px -1px rgba(0,0,0,0.5), 0px 2px 2px -2px rgba(0,0,0,0.5);
+  --shadow: 0px 4px 6px -1px rgba(0,0,0,0.5), 0px 2px 4px -2px rgba(0,0,0,0.5);
+  --shadow-md: 0px 10px 15px -3px rgba(0,0,0,0.5), 0px 4px 6px -4px rgba(0,0,0,0.5);
+  --shadow-lg: 0px 20px 25px -5px rgba(0,0,0,0.5), 0px 8px 10px -6px rgba(0,0,0,0.5);
+  --shadow-xl: 0px 25px 50px -12px rgba(0,0,0,0.6);
+  --shadow-2xl: 0px 35px 60px -15px rgba(0,0,0,0.7);
 
   --tracking-normal: -0.015em;
   --spacing: 0.25rem;

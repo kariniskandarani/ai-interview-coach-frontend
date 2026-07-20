@@ -26,16 +26,16 @@ const FormattedText = ({ text }: { text: string }) => {
 
 const getCategoryStyle = (category: string) => {
   const n = category.toLowerCase();
-  if (n.includes('technical'))  return 'bg-blue-50 text-blue-700 border-blue-200';
-  if (n.includes('behavioral')) return 'bg-amber-50 text-amber-700 border-amber-200';
-  if (n.includes('hr'))         return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-  return 'bg-muted text-muted-foreground border-border';
+  if (n.includes('technical'))  return 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+  if (n.includes('behavioral')) return 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+  if (n.includes('hr'))         return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+  return 'bg-slate-700/50 text-slate-300 border-slate-600';
 };
 
 const getScoreStyle = (score: number) => {
-  if (score >= 8) return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
-  if (score >= 5) return 'bg-amber-50 text-amber-700 border border-amber-200';
-  return 'bg-red-50 text-red-700 border border-red-200';
+  if (score >= 8) return 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+  if (score >= 5) return 'bg-amber-500/15 text-amber-300 border border-amber-500/30';
+  return 'bg-red-500/15 text-red-300 border border-red-500/30';
 };
 
 // Radial gauge SVG for the completion screen
@@ -53,10 +53,10 @@ function ScoreGauge({ score }: { score: number }) {
   // SVG rotation: 0° is 3 o'clock. We want arc to start at ~135° → rotate by 135°
   const rotation = 135;
 
-  const trackColor = '#e5e7eb'; // gray-200
-  const fillColor = score >= 8 ? '#059669' : score >= 5 ? '#d97706' : '#dc2626';
-  const labelColor = score >= 8 ? '#065f46' : score >= 5 ? '#92400e' : '#991b1b';
-  const bgColor   = score >= 8 ? '#d1fae5' : score >= 5 ? '#fef3c7' : '#fee2e2';
+  const trackColor = '#1e293b'; // slate-800
+  const fillColor = score >= 8 ? '#34d399' : score >= 5 ? '#fbbf24' : '#f87171'; // emerald-400 / amber-400 / red-400
+  const labelColor = fillColor;
+  const bgColor   = 'transparent';
 
   return (
     <div className="flex flex-col items-center gap-2">

@@ -16,6 +16,16 @@ idle, first request after that can take up to ~60s to wake up).
 
 The backend runs on Render's free tier, so the first request after idle can take up to a minute.
 
+## Screenshots
+
+| Login | Upload CV + job description |
+|---|---|
+| ![Login](docs/screenshots/01-login.png) | ![Upload](docs/screenshots/02-upload.png) |
+
+| Session history | Past interview detail |
+|---|---|
+| ![History](docs/screenshots/03-history.png) | ![Detail](docs/screenshots/04-history-detail.png) |
+
 ## Stack
 
 - **Frontend:** Vite + React + TypeScript, routing with `wouter`, Tailwind CSS v4, shadcn/ui

@@ -144,7 +144,8 @@ export default function History() {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: i * 0.04 }}
-                className="group flex items-center justify-between gap-4 bg-card border border-border hover:border-primary/30 rounded-xl px-5 py-4 transition-colors cursor-default"
+                onClick={() => setLocation(`/history/${s.id}`)}
+                className="group flex items-center justify-between gap-4 bg-card border border-border hover:border-primary/30 rounded-xl px-5 py-4 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center flex-shrink-0">

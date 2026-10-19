@@ -146,3 +146,28 @@ export async function getReport(sessionId: string): Promise<ReportResponse> {
 
   return response.json();
 }
+
+export interface SavedSession {
+  id: string;
+  created_at: string;
+  role_type: string;
+  transcript: TranscriptEntry[];
+}
+
+// GET /api/history/{id} — a finished interview saved to the logged-in user's history
+export async function getSavedSession(sessionId: string, authToken: string): Promise<SavedSession> {
+  const response = await fetch(`${API_BASE_URL}/api/history/${sessionId}`, {
+    headers: { 'Authorization': `Bearer ${authToken}` },
+  });
+
+  if (response.status === 401) {
+    throw Object.assign(new Error('Unauthorized'), { status: 401 });
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to load this interview.');
+  }
+
+  return response.json();
+}

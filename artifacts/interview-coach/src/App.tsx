@@ -7,6 +7,7 @@ import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import Landing from '@/pages/Landing';
 import Interview from '@/pages/Interview';
 import History from '@/pages/History';
+import HistoryDetail from '@/pages/HistoryDetail';
 import { InterviewProvider } from '@/context/InterviewContext';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 
@@ -57,6 +58,11 @@ function Router() {
       <Route path="/history">
         <AuthGuard>
           <History />
+        </AuthGuard>
+      </Route>
+      <Route path="/history/:id">
+        <AuthGuard>
+          <HistoryDetail />
         </AuthGuard>
       </Route>
       <Route component={NotFound} />

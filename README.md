@@ -9,22 +9,28 @@ implement any AI/business logic itself. Backend: `ai-interview-coach-backend`, d
 `https://ai-interview-coach-backend-g522.onrender.com` (free tier — spins down after 15 min
 idle, first request after that can take up to ~60s to wake up).
 
+## Live demo
+
+- **App:** https://ai-interview-coach-frontend.kariniskandarani2000.workers.dev/
+- **Walkthrough:** https://ka.nz/ai/kariniskandarani
+
+The backend runs on Render's free tier, so the first request after idle can take up to a minute.
+
 ## Stack
 
-Despite the original spec calling for Next.js, what was actually generated and exported here
-is a **Vite + React + TypeScript** app (routing via `wouter`), inside a pnpm workspace. The app
-lives at `artifacts/interview-coach/` and is the only package in the workspace — it talks to
-the FastAPI backend directly via hand-written `fetch()` calls, no intermediate API layer.
+- **Frontend:** Vite + React + TypeScript, routing with `wouter`, Tailwind CSS v4, shadcn/ui
+  (Radix), framer-motion, TanStack Query
+- **Auth:** Supabase Auth (email/password + guest mode) via `@supabase/supabase-js`
+- **Backend:** separate FastAPI service, called directly with `fetch()` (no intermediate API layer)
+- **Hosting:** Cloudflare (frontend), Render (backend)
+- **Tooling:** pnpm workspace; the app lives at `artifacts/interview-coach/`
 
-This was originally scaffolded via Replit's AI Agent. All of the Replit-specific tooling has
-since been removed (deploy is moving elsewhere): the `.replit` config, its Vite plugins,
-per-artifact markers, plus a pile of unused scaffolding that came with the template and was
-never wired to the actual product — an Express `api-server`, an Orval codegen pipeline
-(`lib/api-client-react`, `lib/api-spec`) generating a client for that unused server, its `db`/
-`api-zod` support libs, a standalone `mockup-sandbox` design-preview app, a placeholder
-`scripts` package, and `attached_assets` (raw pasted-prompt files duplicating the `replit_*.md`
-docs below). The `replit_*.md` files themselves are kept — they're the historical spec for
-each feature pass, not tooling.
+## How it was built
+
+Built with AI coding tools (Claude Code, and Replit's AI Agent for the initial scaffold).
+The prompts that drove each feature pass are kept in [`docs/prompts/`](docs/prompts/) as a
+build log and spec history. Replit-specific tooling and unused template scaffolding have since
+been removed.
 
 ## Prerequisites
 
@@ -79,16 +85,16 @@ Then open `http://localhost:5173`. `vite.config.ts` defaults `PORT` to `5173` an
 
 ## What's implemented
 
-Based on the numbered Replit prompts in this repo (`replit_*.md`), which are the source-of-truth
+Based on the prompts in `docs/prompts/`, which are the source-of-truth
 spec for each feature pass:
 
-- ✅ Core upload → interview → chat flow (`replit_frontend_prompt.md`)
-- ✅ Visual polish pass (`replit_visual_polish_prompt.md`)
-- ✅ Resume-on-refresh + Past Interviews history page (`replit_history_and_resume_prompt.md`)
-- ✅ Supabase Auth: login/signup + "Try without an account" guest mode (`replit_auth_prompt.md`)
-- ❓ UX polish pass (`replit_ux_polish_prompt.md`) — not verified
-- ❓ Sizing/refinement pass (`replit_sizing_refinement_prompt.md`) — not verified
-- ✅ Final AI-written readiness report (`replit_report_feature_prompt.md`) — `getReport()` call
+- ✅ Core upload → interview → chat flow (`docs/prompts/01-frontend.md`)
+- ✅ Visual polish pass (`docs/prompts/02-visual-polish.md`)
+- ✅ Resume-on-refresh + Past Interviews history page (`docs/prompts/03-history-and-resume.md`)
+- ✅ Supabase Auth: login/signup + "Try without an account" guest mode (`docs/prompts/04-auth.md`)
+- ❓ UX polish pass (`docs/prompts/05-ux-polish.md`) — not verified
+- ❓ Sizing/refinement pass (`docs/prompts/06-sizing-refinement.md`) — not verified
+- ✅ Final AI-written readiness report (`docs/prompts/07-report-feature.md`) — `getReport()` call
   to `/api/sessions/{id}/report` and a full report view (score gauge, summary, strengths,
   weaknesses, study plan) in `Interview.tsx`
 
